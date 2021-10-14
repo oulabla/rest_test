@@ -16,6 +16,8 @@ from app.models import sql_engine
 from app.models.user import User
 from app.models import sql_engine
 
+from .containers import ApplicationContainer
+
 from app.api.users import get_users, get_user, insert_user, update_user, delete_user
 from app.api.roles import get_roles, get_role, insert_role, update_role, delete_role
 
@@ -61,11 +63,16 @@ async def init_database(app :web.Application) -> AsyncGenerator[None, None]:
     yield
     await sql_engine.dispose()
 
+container = ApplicationContainer()
+container.config.from_yaml('config.yaml')
 
-app = web.Application(middlewares=[
-    api_underscore_body,
-    api_exception_json
-])
+app: web.Application = container.app()
+app.container = container 
+
+# app = web.Application(middlewares=[
+#     api_underscore_body,
+#     api_exception_json
+# ])
 
 app.cleanup_ctx.extend([
     init_database
@@ -87,6 +94,7 @@ app.router.add_delete('/api/roles/{id}', delete_role)
 app.router.add_get('/', index_action)
 app.router.add_get('/text', text_action)
 
+app.router.add_get('/di', container.di_view.as_view())
 
 uvloop.install()
 
