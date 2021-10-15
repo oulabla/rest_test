@@ -7,6 +7,7 @@ from app.services.test_service import TestService
 from app.services.text_searcher import TextSearcher
 
 class ApplicationContainer(containers.DeclarativeContainer):
+    
     app = aiohttp.Application(web.Application)
 
     config = providers.Configuration()

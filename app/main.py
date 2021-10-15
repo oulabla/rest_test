@@ -1,6 +1,7 @@
 import asyncio
 from typing import AsyncGenerator
 from aiohttp import web
+from aiohttp_swagger import *
 from concurrent.futures import ThreadPoolExecutor
 from urllib.request import urlopen
 import random
@@ -22,6 +23,8 @@ from app.api.users import get_users, get_user, insert_user, update_user, delete_
 from app.api.roles import get_roles, get_role, insert_role, update_role, delete_role
 
 from app.middlewares import api_exception_json, api_underscore_body
+
+
 
 db = DataBase()
 
@@ -69,10 +72,10 @@ container.config.from_yaml('config.yaml')
 app: web.Application = container.app()
 app.container = container 
 
-# app = web.Application(middlewares=[
-#     api_underscore_body,
-#     api_exception_json
-# ])
+app = web.Application(middlewares=[
+    api_underscore_body,
+    api_exception_json
+])
 
 app.cleanup_ctx.extend([
     init_database
@@ -97,8 +100,9 @@ app.router.add_get('/text', text_action)
 app.router.add_get('/di', container.di_view.as_view())
 
 uvloop.install()
+setup_swagger(app, swagger_url="/api/v1/doc", ui_version=3)
 
 if __name__ == '__main__':
-    
+    print("__MAIN__")
     web.run_app(app, port="8000")
 
